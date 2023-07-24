@@ -1,4 +1,4 @@
-# 🎮 Steam Alert 🎮
+# Steam Alert
 
 <img src="./img/banner.png" alt="Banner Steam Alert">
 
