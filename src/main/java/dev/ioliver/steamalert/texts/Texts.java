@@ -22,11 +22,12 @@ public abstract class Texts {
   public static final String DELETE_ACCOUNT_CONFIRM = "Account deleted. 😥";
   public static final String DELETE_ACCOUNT_FAULT = "Fault on delete. 😱";
   public static final String ADD_ACCOUNT_FAULT = "Fault on account addition. 😰";
-  public static final String INSERT_ACCOUNT_ID = "Please, insert the account’s Steam ID: 🔢";
+  public static final String INSERT_ACCOUNT_ID = "Please, insert the account’s Steam ID: \nAccess https://www.steamidfinder.com/ to find it. 🔢";
   public static final String ACCOUNT_DONT_EXIST = "Sorry. Don’t exists any account with this Steam ID. 😓";
   public static final String TIMEOUT_ERROR = "Sorry. Be more fast to send me the Steam ID! ⏰";
   public static final String ACCOUNT_ADDED = "Account added! 😁";
   public static final String INVALID_COMMAND = "Please, say: \"/menu\" to access the options.";
   public static final String TOO_MANY_REQUESTS = "Too many requests! \uD83D\uDE35\u200D\uD83D\uDCAB Await around 30 minutes!";
   public static final String MENU_DESCRIPTION = "Open the options menu! ⚙️";
+  public static final String DESCRIPTION = "Steam Alert is a project that uses Telegram to send notifications about games on sale on the Steam platform.";
 }

@@ -9,7 +9,7 @@ services:
     environment:
       - DB_URL=jdbc:mysql://db:3306/steam-alert-db?createDatabaseIfNotExist=true
       - DB_USER=root
-      - DB_PASSWORD=#YOUR DB PASS
+      - DB_PASSWORD= # YOUR DB PASS
       - BOT_TOKEN= # YOUR BOT TOKEN
       - BOT_CREATOR_ID= # YOUR TELEGRAM ID
       - STEAM_API_KEY= # YOUR STEAM API KEY
