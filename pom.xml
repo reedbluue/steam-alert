@@ -11,7 +11,7 @@
     </parent>
     <groupId>dev.ioliver</groupId>
     <artifactId>steam-alert</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.1</version>
     <name>steam-alert</name>
     <description>steam-alert</description>
     <properties>
@@ -38,8 +38,8 @@
             <scope>runtime</scope>
         </dependency>
         <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
             <scope>runtime</scope>
         </dependency>
         <dependency>
@@ -62,11 +62,15 @@
             <artifactId>webdrivermanager</artifactId>
             <version>5.4.0</version>
         </dependency>
-
         <dependency>
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct</artifactId>
             <version>${org.mapstruct.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.telegram</groupId>
+            <artifactId>telegrambots-abilities</artifactId>
+            <version>6.7.0</version>
         </dependency>
     </dependencies>
 

@@ -13,6 +13,7 @@ import dev.ioliver.steamalert.dtos.price.PriceOverviewDto;
 public interface AppDetailsMapper {
   AppDetailsMapper INSTANCE = Mappers.getMapper(AppDetailsMapper.class);
   PriceOverviewMapper PRICE_OVERVIEW_MAPPER = Mappers.getMapper(PriceOverviewMapper.class);
+
   @Mapping(source = "steam_appid", target = "appId")
   @Mapping(source = "short_description", target = "shortDescription")
   @Mapping(source = "header_image", target = "headerImageUrl")
@@ -22,6 +23,7 @@ public interface AppDetailsMapper {
   default String mapToString(Object o) {
     return o != null ? o.toString() : null;
   }
+
   default PriceOverviewDto mapToPriceOverviewDto(Object value) {
     return PRICE_OVERVIEW_MAPPER.mapToDto((Map<String, Object>) value);
   }

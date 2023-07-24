@@ -11,6 +11,7 @@ import dev.ioliver.steamalert.dtos.price.PriceOverviewDto;
 @Mapper(componentModel = "spring")
 public interface PriceOverviewMapper {
   PriceOverviewMapper INSTANCE = Mappers.getMapper(PriceOverviewMapper.class);
+
   @Mapping(source = "currency", target = "currency")
   @Mapping(source = "initial", target = "initialPrice")
   @Mapping(source = "final", target = "finalPrice")
