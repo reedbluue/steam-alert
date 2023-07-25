@@ -12,8 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 @SpringBootApplication
 public class SteamAlertApplication {
 
-  public static void main(String[] args) throws InterruptedException {
-    Thread.sleep(15000);
+  public static void main(String[] args) {
     new SpringApplicationBuilder(SteamAlertApplication.class).web(WebApplicationType.NONE).run(args);
   }
 

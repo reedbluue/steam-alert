@@ -51,8 +51,8 @@ e do Telegram Bot, como explicado a seguir.
 
 - Para obter o token do Telegram Bot, você precisa ter uma conta no Telegram e conversar com
   o [@BotFather](https://t.me/botfather). Lá, você deve digitar `/newbot` e seguir as instruções
-  para
-  criar um novo bot. Você receberá um token alfanumérico que deve ser guardado em um lugar seguro.
+  para criar um novo bot. Você receberá um token alfanumérico que deve ser guardado em um lugar
+  seguro.
 
 Depois de obter as credenciais da API da Steam e do Telegram Bot, você deve editar o arquivo
 docker-compose.yml, adicionando suas informações nas variáveis de ambiente:
