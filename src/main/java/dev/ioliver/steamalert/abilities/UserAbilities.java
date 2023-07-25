@@ -257,8 +257,7 @@ public class UserAbilities implements AbilityExtension {
     BiConsumer<BaseAbilityBot, Update> action = (ability, upd) -> {
       if (USER_SERVICE.findByTelegramId(AbilityUtils.getUser(upd).getId()).getRequests() == 50) {
         SendMessage message = SendMessage.builder().chatId(upd.getMessage().getChatId()).text(Texts.TOO_MANY_REQUESTS).build();
-        Optional<Message> sended = ability.silent().execute(message);
-        sended.ifPresent(value -> asyncDeleteMessage(sended.get().getChatId(), sended.get().getMessageId(), 60));
+        ability.silent().execute(message);
       }
     };
     return Reply.of(action, isSuspended());

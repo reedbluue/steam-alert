@@ -7,7 +7,7 @@
 Steam Alert é um projeto que integra o Telegram e a Steam para te informar sobre as promoções de
 jogos. Com ele, você pode se inscrever no bot, adicionar as contas da Steam que você quer seguir, e
 receber mensagens com os jogos que estão na sua lista de desejos com preços reduzidos. O projeto foi
-feito com o Java 17 e Spring Boot 3, além de um banco de dados MySQL e a biblioteca TelegramBots.
+feito com o Java 17 e Spring Boot 3, além de um banco de dados SQLite e a biblioteca TelegramBots.
 
 ## 🚀 Getting started 🚀
 
@@ -44,9 +44,8 @@ e do Telegram Bot, como explicado a seguir.
 
 - Para obter a chave da API da Steam, você precisa ter uma conta na Steam e acessar o
   site [Steam Web API Key](https://steamcommunity.com/dev/apikey). Lá, você deve informar um
-  domínio (
-  pode ser qualquer um) e clicar em "Register". Você receberá uma chave alfanumérica que deve ser
-  guardada em um lugar seguro.
+  domínio (pode ser qualquer um) e clicar em "Register". Você receberá uma chave alfanumérica que
+  deve ser guardada em um lugar seguro.
 
 ### Obter as credenciais do Telegram Bot
 
@@ -69,21 +68,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    depends_on:
-      - db
     environment:
-      - DB_URL=jdbc:mysql://db:3306/steam-alert-db?createDatabaseIfNotExist=true
-      - DB_USER=root
-      - DB_PASSWORD= #YOUR DB PASS
       - BOT_TOKEN= # YOUR BOT TOKEN
       - BOT_CREATOR_ID= # YOUR TELEGRAM ID
       - STEAM_API_KEY= # YOUR STEAM API KEY
-
-  db:
-    image: mysql
-    environment:
-      - MYSQL_DATABASE=steam-alert-db
-      - MYSQL_ROOT_PASSWORD= #YOUR DB PASS
 ```
 
 ### Rodar o projeto com Docker Compose
@@ -93,7 +81,7 @@ seguinte comando:
 
 > docker-compose up
 
-Isso irá construir as imagens dos serviços, criar os containers e iniciar a aplicação.
+Isso irá construir a imagem do serviço, criar o container e iniciar a aplicação.
 
 Para testar o bot, abra o Telegram e inicie uma conversa com o seu bot criado pelo BotFather. Você
 deve ver as opções do menu e poder interagir com o bot.

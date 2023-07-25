@@ -30,4 +30,5 @@ public abstract class Texts {
   public static final String TOO_MANY_REQUESTS = "Too many requests! \uD83D\uDE35\u200D\uD83D\uDCAB Await around 30 minutes!";
   public static final String MENU_DESCRIPTION = "Open the options menu! ⚙️";
   public static final String DESCRIPTION = "Steam Alert is a project that uses Telegram to send notifications about games on sale on the Steam platform.";
+  public static final String SHORT_DESCRIPTION = "A Telegram bot that sends notifications about games on sale on the Steam platform.";
 }

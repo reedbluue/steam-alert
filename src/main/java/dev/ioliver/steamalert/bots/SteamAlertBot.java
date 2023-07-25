@@ -7,6 +7,7 @@ import org.telegram.telegrambots.bots.DefaultAbsSender;
 import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
 import org.telegram.telegrambots.meta.api.methods.description.SetMyDescription;
+import org.telegram.telegrambots.meta.api.methods.description.SetMyShortDescription;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 
@@ -37,8 +38,10 @@ public class SteamAlertBot extends AbilityBot {
   public void onRegister() {
     List<BotCommand> commands = List.of(BotCommand.builder().command("menu").description(Texts.MENU_DESCRIPTION).build());
     SetMyCommands setMyCommands = SetMyCommands.builder().commands(commands).build();
+    SetMyShortDescription shortDescription = SetMyShortDescription.builder().shortDescription(Texts.SHORT_DESCRIPTION).build();
     SetMyDescription description = SetMyDescription.builder().description(Texts.DESCRIPTION).build();
     silent().execute(description);
+    silent().execute(shortDescription);
     silent().execute(setMyCommands);
     super.onRegister();
   }
