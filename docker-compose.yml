@@ -1,4 +1,4 @@
-version: '1'
+version: '3.8'
 services:
   app:
     build:
@@ -8,3 +8,4 @@ services:
       - BOT_TOKEN= # YOUR BOT TOKEN
       - BOT_CREATOR_ID= # YOUR TELEGRAM ID
       - STEAM_API_KEY= # YOUR STEAM API KEY
+    restart: unless-stopped
