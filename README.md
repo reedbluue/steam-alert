@@ -62,7 +62,7 @@ docker-compose.yml, adicionando suas informações nas variáveis de ambiente:
 ```yaml
 # Modifique as variáveis comentadas abaixo
 
-version: '1'
+version: '3.8'
 services:
   app:
     build:
@@ -72,6 +72,7 @@ services:
       - BOT_TOKEN= # YOUR BOT TOKEN
       - BOT_CREATOR_ID= # YOUR TELEGRAM ID
       - STEAM_API_KEY= # YOUR STEAM API KEY
+    restart: always
 ```
 
 ### Rodar o projeto com Docker Compose

@@ -3,10 +3,6 @@ package dev.ioliver.steamalert.services;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpMethod;
@@ -18,6 +14,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,10 +24,8 @@ import java.util.stream.Collectors;
 import dev.ioliver.steamalert.dtos.appDetails.AppDetailsDto;
 import dev.ioliver.steamalert.dtos.price.PriceOverviewDto;
 import dev.ioliver.steamalert.dtos.steamProfileData.SteamProfileDataDto;
-import dev.ioliver.steamalert.dtos.wishlistItem.WishlistItemResponseDto;
 import dev.ioliver.steamalert.mappers.AppDetailsMapper;
 import dev.ioliver.steamalert.mappers.PriceOverviewMapper;
-import io.github.bonigarcia.wdm.WebDriverManager;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -43,7 +38,6 @@ public class SteamService {
   private final RestTemplate client = new RestTemplate();
   private final PriceOverviewMapper priceOverviewMapper = PriceOverviewMapper.INSTANCE;
   private final AppDetailsMapper appDetailsMapper = AppDetailsMapper.INSTANCE;
-  private WebDriver driver;
 
   @Value("${steam.api.key}")
   private String STEAM_API_KEY;
@@ -53,20 +47,6 @@ public class SteamService {
     if (STEAM_API_KEY == null || STEAM_API_KEY.isBlank()) {
       throw new RuntimeException("Bot token or bot creator id is invalid");
     }
-
-    WebDriverManager.chromedriver().setup();
-
-    ChromeOptions options = new ChromeOptions();
-    options.setExperimentalOption("useAutomationExtension", false);
-    options.addArguments("disable-infobars"); // disabling infobars
-    options.addArguments("--disable-extensions"); // disabling extensions
-    options.addArguments("--disable-dev-shm-usage"); // overcome limited resource problems
-    options.addArguments("--no-sandbox"); // Bypass OS security model
-    options.addArguments("--headless");
-
-    driver = new ChromeDriver(options);
-
-    Runtime.getRuntime().addShutdownHook(new Thread(() -> driver.quit()));
   }
 
   private AppDetailsDto getDetails(Integer appId) {
@@ -130,12 +110,25 @@ public class SteamService {
   }
 
   private List<Integer> getWishlistAppIds(String steamId) {
-    driver.get("https://store.steampowered.com/wishlist/profiles/" + steamId + "/");
-    JavascriptExecutor js = (JavascriptExecutor) driver;
-    List<Object> wishlistData = (List<Object>) js.executeScript("return g_rgWishlistData;");
-    List<WishlistItemResponseDto> wishlistItems = objectMapper.convertValue(wishlistData, new TypeReference<>() {
-    });
-    return wishlistItems.stream().map(WishlistItemResponseDto::appid).toList();
+    int page = 0;
+    List<Integer> steamAppList = new ArrayList<>();
+    Map<String, Object> resMap;
+    while (true) {
+      UriComponents uriComponents = UriComponentsBuilder
+              .fromUriString("https://store.steampowered.com/wishlist/profiles/" + steamId + "/wishlistdata/")
+              .queryParam("p", page).build();
+      try {
+        String json = client.getForObject(uriComponents.toString(), String.class);
+        resMap = objectMapper.readValue(json, new TypeReference<>() {
+        });
+        if (resMap.isEmpty()) break;
+        resMap.forEach((k, v) -> steamAppList.add(Integer.parseInt(k)));
+        page++;
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+    }
+    return steamAppList;
   }
 
   public SteamProfileDataDto getSteamProfileData(String steamId) {

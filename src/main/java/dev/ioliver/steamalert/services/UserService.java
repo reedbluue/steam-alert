@@ -1,6 +1,5 @@
 package dev.ioliver.steamalert.services;
 
-import org.openqa.selenium.NotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,8 +19,8 @@ public class UserService {
   public User create(@NonNull Long telegramId, @NonNull Long chatId) {
     try {
       findByTelegramId(telegramId);
-      throw new RuntimeException("User already exists.");
-    } catch (NotFoundException ignored) {
+      throw new IllegalArgumentException("User already exists.");
+    } catch (Exception ignored) {
     }
     User user = User.builder().telegramId(telegramId).chatId(chatId).requests(0L).active(false).build();
     return USER_REPOSITORY.save(user);
@@ -32,7 +31,7 @@ public class UserService {
   }
 
   public User findByTelegramId(@NonNull Long telegramId) {
-    return USER_REPOSITORY.findById(telegramId).orElseThrow(() -> new NotFoundException("User not found."));
+    return USER_REPOSITORY.findById(telegramId).orElseThrow(() -> new IllegalArgumentException("User not found."));
   }
 
   public boolean isRegistered(@NonNull Long telegramId) {
