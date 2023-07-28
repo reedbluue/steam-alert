@@ -49,7 +49,8 @@ public class SteamAlertBot extends AbilityBot {
   @Override
   public void onUpdateReceived(Update update) {
     try {
-      registerUser(AbilityUtils.getUser(update).getId(), AbilityUtils.getChatId(update));
+      if(!USER_SERVICE.isRegistered(AbilityUtils.getUser(update).getId()))
+        registerUser(AbilityUtils.getUser(update).getId(), AbilityUtils.getChatId(update));
       USER_SERVICE.addRequest(AbilityUtils.getUser(update).getId());
     } catch (Exception ignored) {
     }

@@ -116,7 +116,9 @@ public class UserAbilities implements AbilityExtension {
           AnswerCallbackQuery build;
           try {
             USER_SERVICE.setActive(AbilityUtils.getUser(upd).getId(), true);
+            SendMessage message = SendMessage.builder().chatId(AbilityUtils.getChatId(upd)).text(Texts.FIRST_MESSAGE).build();
             build = AnswerCallbackQuery.builder().callbackQueryId(upd.getCallbackQuery().getId()).text(Texts.SUBSCRIBE_CONFIRM).build();
+            ability.silent().execute(message);
           } catch (Exception e) {
             build = AnswerCallbackQuery.builder().callbackQueryId(upd.getCallbackQuery().getId()).text(Texts.ALREADY_SUBSCRIBED).build();
           }
@@ -183,6 +185,7 @@ public class UserAbilities implements AbilityExtension {
           Matcher deleteMatcher = Pattern.compile("delete-(.*)").matcher(upd.getCallbackQuery().getData());
           if (checkMatcher.find()) {
             List<AppDetailsDto> appDetails = STEAM_SERVICE.getAllSaleAppDetails(checkMatcher.group(1));
+
             if (appDetails.isEmpty()) {
               AnswerCallbackQuery build = AnswerCallbackQuery.builder().callbackQueryId(upd.getCallbackQuery().getId()).text(Texts.WITHOUT_SALES).build();
               BOT.silent().execute(build);
@@ -290,7 +293,7 @@ public class UserAbilities implements AbilityExtension {
   }
 
   private Predicate<Update> isSubscribed() {
-    return upd -> USER_SERVICE.isRegistered(AbilityUtils.getUser(upd).getId());
+    return upd -> USER_SERVICE.isRegisteredAndActive(AbilityUtils.getUser(upd).getId());
   }
 
   private Predicate<Update> isValidCommand() {

@@ -34,8 +34,12 @@ public class UserService {
     return USER_REPOSITORY.findById(telegramId).orElseThrow(() -> new IllegalArgumentException("User not found."));
   }
 
+  public boolean isRegisteredAndActive(@NonNull Long telegramId) {
+    return USER_REPOSITORY.existsByTelegramIdAndActive(telegramId, true);
+  }
+
   public boolean isRegistered(@NonNull Long telegramId) {
-    return USER_REPOSITORY.existsByTelegramIdAndActiveIsTrue(telegramId);
+    return USER_REPOSITORY.existsByTelegramId(telegramId);
   }
 
   public void deleteByTelegramId(@NonNull Long telegramId) {

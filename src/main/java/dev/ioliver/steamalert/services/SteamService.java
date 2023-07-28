@@ -124,8 +124,8 @@ public class SteamService {
         if (resMap.isEmpty()) break;
         resMap.forEach((k, v) -> steamAppList.add(Integer.parseInt(k)));
         page++;
-      } catch (Exception e) {
-        throw new RuntimeException(e);
+      } catch (Exception ignored) {
+        break;
       }
     }
     return steamAppList;
@@ -157,12 +157,12 @@ public class SteamService {
 
   private List<Integer> getOnlyOnSaleAppIds(List<Integer> appIds) {
     Map<Integer, PriceOverviewDto> prices = getPrices(appIds);
-    return prices.entrySet().stream().filter(e -> e.getValue().discountPercent() != 0).map(e -> e.getKey()).collect(Collectors.toList());
+    return prices.entrySet().stream().filter(e -> e.getValue().discountPercent() != 0).map(Map.Entry::getKey).toList();
   }
 
   public List<AppDetailsDto> getAllSaleAppDetails(String steamId) {
     List<Integer> appIds = getOnlyOnSaleAppIds(getWishlistAppIds(steamId));
-    return appIds.stream().map(this::getDetails).collect(Collectors.toList());
+    return appIds.stream().map(this::getDetails).toList();
   }
 
   public List<AppDetailsDto> getAllAppDetails(String steamId) {
