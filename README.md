@@ -80,7 +80,7 @@ services:
 Para rodar o projeto com Docker Compose, abra um terminal na pasta raiz do projeto e digite o
 seguinte comando:
 
-> docker-compose up
+> docker-compose up -d
 
 Isso irá construir a imagem do serviço, criar o container e iniciar a aplicação.
 
