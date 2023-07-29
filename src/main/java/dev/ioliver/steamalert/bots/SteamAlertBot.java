@@ -3,8 +3,6 @@ package dev.ioliver.steamalert.bots;
 import org.telegram.abilitybots.api.bot.AbilityBot;
 import org.telegram.abilitybots.api.toggle.BareboneToggle;
 import org.telegram.abilitybots.api.util.AbilityUtils;
-import org.telegram.telegrambots.bots.DefaultAbsSender;
-import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
 import org.telegram.telegrambots.meta.api.methods.description.SetMyDescription;
 import org.telegram.telegrambots.meta.api.methods.description.SetMyShortDescription;
@@ -22,7 +20,8 @@ public class SteamAlertBot extends AbilityBot {
   private final Long creatorId;
   private final UserService USER_SERVICE;
 
-  public SteamAlertBot(String token, String botName, Long creatorId, UserService USER_SERVICE, SteamService STEAM_SERVICE) {
+  public SteamAlertBot(String token, String botName, Long creatorId, UserService USER_SERVICE,
+                       SteamService STEAM_SERVICE) {
     super(token, botName, new BareboneToggle());
     addExtension(new UserAbilities(this, USER_SERVICE, STEAM_SERVICE));
     this.creatorId = creatorId;
@@ -36,9 +35,11 @@ public class SteamAlertBot extends AbilityBot {
 
   @Override
   public void onRegister() {
-    List<BotCommand> commands = List.of(BotCommand.builder().command("menu").description(Texts.MENU_DESCRIPTION).build());
+    List<BotCommand> commands = List.of(
+            BotCommand.builder().command("menu").description(Texts.MENU_DESCRIPTION).build());
     SetMyCommands setMyCommands = SetMyCommands.builder().commands(commands).build();
-    SetMyShortDescription shortDescription = SetMyShortDescription.builder().shortDescription(Texts.SHORT_DESCRIPTION).build();
+    SetMyShortDescription shortDescription = SetMyShortDescription.builder().shortDescription(Texts.SHORT_DESCRIPTION)
+                                                                  .build();
     SetMyDescription description = SetMyDescription.builder().description(Texts.DESCRIPTION).build();
     silent().execute(description);
     silent().execute(shortDescription);
@@ -49,7 +50,7 @@ public class SteamAlertBot extends AbilityBot {
   @Override
   public void onUpdateReceived(Update update) {
     try {
-      if(!USER_SERVICE.isRegistered(AbilityUtils.getUser(update).getId()))
+      if (!USER_SERVICE.isRegistered(AbilityUtils.getUser(update).getId()))
         registerUser(AbilityUtils.getUser(update).getId(), AbilityUtils.getChatId(update));
       USER_SERVICE.addRequest(AbilityUtils.getUser(update).getId());
     } catch (Exception ignored) {

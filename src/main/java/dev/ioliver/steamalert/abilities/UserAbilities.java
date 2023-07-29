@@ -63,6 +63,12 @@ public class UserAbilities implements AbilityExtension {
     }, delay, TimeUnit.SECONDS);
   }
 
+  private void sendTypeAction(Long chatId) {
+    try {
+      SendChatAction botAction = SendChatAction.builder().chatId(chatId).action(ActionType.TYPING.toString()).build();
+      BOT.silent().execute(botAction);
+    } catch (Exception ignored) {}
+  }
 
   private void deleteMessage(Long chatId, Integer messageId) {
     DeleteMessage deleteMessage = DeleteMessage.builder().chatId(chatId).messageId(messageId).build();
@@ -74,21 +80,34 @@ public class UserAbilities implements AbilityExtension {
 
   @SuppressWarnings("unchecked")
   public Ability showMenu() {
-    return Ability.builder().name("menu").info("Show the menu").locality(Locality.USER).privacy(Privacy.PUBLIC).action(ctx -> {
-      List<InlineKeyboardButton> buttonList0 = List.of(InlineKeyboardButton.builder().text(Texts.MENU_MONITORED_ACCOUNTS).callbackData("monitored-list").build(), InlineKeyboardButton.builder().text(Texts.MENU_UNSUBSCRIBE).callbackData("unsub-question").build());
-      List<InlineKeyboardButton> buttonList1 = List.of(InlineKeyboardButton.builder().text(Texts.MENU_ABOUT).url("https://github.com/reedbluue/steam-alert").build(), InlineKeyboardButton.builder().text(Texts.CLOSE_BUTTON).callbackData("none").build());
-      InlineKeyboardMarkup keyboardMarkup = InlineKeyboardMarkup.builder().keyboard(List.of(buttonList0, buttonList1)).build();
+    return Ability.builder().name("menu").info("Show the menu").locality(Locality.USER).privacy(Privacy.PUBLIC)
+                  .action(ctx -> {
+                    sendTypeAction(ctx.update().getMessage().getChatId());
+                    List<InlineKeyboardButton> buttonList0 = List.of(
+                            InlineKeyboardButton.builder().text(Texts.MENU_MONITORED_ACCOUNTS)
+                                                .callbackData("monitored-list").build(),
+                            InlineKeyboardButton.builder().text(Texts.MENU_UNSUBSCRIBE).callbackData("unsub-question")
+                                                .build());
+                    List<InlineKeyboardButton> buttonList1 = List.of(
+                            InlineKeyboardButton.builder().text(Texts.MENU_ABOUT)
+                                                .url("https://github.com/reedbluue/steam-alert").build(),
+                            InlineKeyboardButton.builder().text(Texts.CLOSE_BUTTON).callbackData("none").build());
+                    InlineKeyboardMarkup keyboardMarkup = InlineKeyboardMarkup.builder().keyboard(
+                            List.of(buttonList0, buttonList1)).build();
 
-      SendMessage message = SendMessage.builder().chatId(ctx.update().getMessage().getChatId()).text(Texts.SELECT_AN_OPTION).replyMarkup(keyboardMarkup).build();
-      Optional<Message> sendMessage = BOT.silent().execute(message);
-      sendMessage.ifPresent(value -> asyncDeleteMessage(value.getChatId(), value.getMessageId()));
-      deleteMessage(ctx.update().getMessage().getChatId(), ctx.update().getMessage().getMessageId());
-    }).flag(isSubscribed(), isSuspended().negate()).build();
+                    SendMessage message = SendMessage.builder().chatId(ctx.update().getMessage().getChatId())
+                                                     .text(Texts.SELECT_AN_OPTION).replyMarkup(keyboardMarkup).build();
+                    Optional<Message> sendMessage = BOT.silent().execute(message);
+                    sendMessage.ifPresent(value -> asyncDeleteMessage(value.getChatId(), value.getMessageId()));
+                    deleteMessage(ctx.update().getMessage().getChatId(), ctx.update().getMessage().getMessageId());
+                  }).flag(isSubscribed(), isSuspended().negate()).build();
   }
 
   public Reply onInvalidCommand() {
     BiConsumer<BaseAbilityBot, Update> action = (ability, upd) -> {
-      SendMessage message = SendMessage.builder().chatId(upd.getMessage().getChatId()).text(Texts.INVALID_COMMAND).build();
+      sendTypeAction(upd.getMessage().getChatId());
+      SendMessage message = SendMessage.builder().chatId(upd.getMessage().getChatId()).text(Texts.INVALID_COMMAND)
+                                       .build();
       Optional<Message> execute = BOT.silent().execute(message);
       execute.ifPresent(value -> asyncDeleteMessage(value.getChatId(), value.getMessageId()));
       deleteMessage(upd.getMessage().getChatId(), upd.getMessage().getMessageId());
@@ -98,10 +117,14 @@ public class UserAbilities implements AbilityExtension {
 
   public Reply onUnsubscribedUser() {
     BiConsumer<BaseAbilityBot, Update> action = (ability, upd) -> {
-      List<InlineKeyboardButton> buttonList = List.of(InlineKeyboardButton.builder().text(Texts.YES).callbackData("sub").build(), InlineKeyboardButton.builder().text(Texts.NO).callbackData("none").build());
+      sendTypeAction(upd.getMessage().getChatId());
+      List<InlineKeyboardButton> buttonList = List.of(
+              InlineKeyboardButton.builder().text(Texts.YES).callbackData("sub").build(),
+              InlineKeyboardButton.builder().text(Texts.NO).callbackData("none").build());
       InlineKeyboardMarkup keyboardMarkup = InlineKeyboardMarkup.builder().keyboardRow(buttonList).build();
 
-      SendMessage message = SendMessage.builder().chatId(upd.getMessage().getChatId()).text(Texts.SUBSCRIBE_REQUEST).replyMarkup(keyboardMarkup).build();
+      SendMessage message = SendMessage.builder().chatId(upd.getMessage().getChatId()).text(Texts.SUBSCRIBE_REQUEST)
+                                       .replyMarkup(keyboardMarkup).build();
       deleteMessage(upd.getMessage().getChatId(), upd.getMessage().getMessageId());
       Optional<Message> sendMessage = ability.silent().execute(message);
       sendMessage.ifPresent(value -> asyncDeleteMessage(value.getChatId(), value.getMessageId()));
@@ -113,85 +136,122 @@ public class UserAbilities implements AbilityExtension {
     BiConsumer<BaseAbilityBot, Update> action = (ability, upd) -> {
       switch (upd.getCallbackQuery().getData()) {
         case "sub" -> {
+          sendTypeAction(upd.getCallbackQuery().getMessage().getChatId());
           AnswerCallbackQuery build;
           try {
             USER_SERVICE.setActive(AbilityUtils.getUser(upd).getId(), true);
-            SendMessage message = SendMessage.builder().chatId(AbilityUtils.getChatId(upd)).text(Texts.FIRST_MESSAGE).build();
-            build = AnswerCallbackQuery.builder().callbackQueryId(upd.getCallbackQuery().getId()).text(Texts.SUBSCRIBE_CONFIRM).build();
+            SendMessage message = SendMessage.builder().chatId(AbilityUtils.getChatId(upd)).text(Texts.FIRST_MESSAGE)
+                                             .build();
+            build = AnswerCallbackQuery.builder().callbackQueryId(upd.getCallbackQuery().getId())
+                                       .text(Texts.SUBSCRIBE_CONFIRM).build();
             ability.silent().execute(message);
           } catch (Exception e) {
-            build = AnswerCallbackQuery.builder().callbackQueryId(upd.getCallbackQuery().getId()).text(Texts.ALREADY_SUBSCRIBED).build();
+            build = AnswerCallbackQuery.builder().callbackQueryId(upd.getCallbackQuery().getId())
+                                       .text(Texts.ALREADY_SUBSCRIBED).build();
           }
           ability.silent().execute(build);
-          deleteMessage(upd.getCallbackQuery().getMessage().getChatId(), upd.getCallbackQuery().getMessage().getMessageId());
+          deleteMessage(upd.getCallbackQuery().getMessage().getChatId(),
+                        upd.getCallbackQuery().getMessage().getMessageId());
         }
         case "unsub-question" -> {
-          List<InlineKeyboardButton> buttonList = List.of(InlineKeyboardButton.builder().text(Texts.YES).callbackData("unsub").build(), InlineKeyboardButton.builder().text(Texts.NO).callbackData("none").build());
+          sendTypeAction(upd.getCallbackQuery().getMessage().getChatId());
+          List<InlineKeyboardButton> buttonList = List.of(
+                  InlineKeyboardButton.builder().text(Texts.YES).callbackData("unsub").build(),
+                  InlineKeyboardButton.builder().text(Texts.NO).callbackData("none").build());
           InlineKeyboardMarkup keyboardMarkup = InlineKeyboardMarkup.builder().keyboardRow(buttonList).build();
 
-          SendMessage message = SendMessage.builder().chatId(upd.getCallbackQuery().getMessage().getChatId()).text(Texts.UNSUBSCRIBE_REQUEST).replyMarkup(keyboardMarkup).build();
-          deleteMessage(upd.getCallbackQuery().getMessage().getChatId(), upd.getCallbackQuery().getMessage().getMessageId());
+          SendMessage message = SendMessage.builder().chatId(upd.getCallbackQuery().getMessage().getChatId())
+                                           .text(Texts.UNSUBSCRIBE_REQUEST).replyMarkup(keyboardMarkup).build();
+          deleteMessage(upd.getCallbackQuery().getMessage().getChatId(),
+                        upd.getCallbackQuery().getMessage().getMessageId());
           Optional<Message> sendMessage = ability.silent().execute(message);
-          sendMessage.ifPresent(value -> asyncDeleteMessage(upd.getCallbackQuery().getMessage().getChatId(), upd.getCallbackQuery().getMessage().getMessageId()));
+          sendMessage.ifPresent(value -> asyncDeleteMessage(upd.getCallbackQuery().getMessage().getChatId(),
+                                                            upd.getCallbackQuery().getMessage().getMessageId()));
         }
         case "unsub" -> {
+          sendTypeAction(upd.getCallbackQuery().getMessage().getChatId());
           AnswerCallbackQuery build;
           try {
             USER_SERVICE.setActive(AbilityUtils.getUser(upd).getId(), false);
-            build = AnswerCallbackQuery.builder().callbackQueryId(upd.getCallbackQuery().getId()).text(Texts.UNSUBSCRIBE_CONFIRM).build();
+            build = AnswerCallbackQuery.builder().callbackQueryId(upd.getCallbackQuery().getId())
+                                       .text(Texts.UNSUBSCRIBE_CONFIRM).build();
           } catch (Exception e) {
-            build = AnswerCallbackQuery.builder().callbackQueryId(upd.getCallbackQuery().getId()).text(Texts.ALREADY_UNSUBSCRIBED).build();
+            build = AnswerCallbackQuery.builder().callbackQueryId(upd.getCallbackQuery().getId())
+                                       .text(Texts.ALREADY_UNSUBSCRIBED).build();
           }
           ability.silent().execute(build);
-          deleteMessage(upd.getCallbackQuery().getMessage().getChatId(), upd.getCallbackQuery().getMessage().getMessageId());
+          deleteMessage(upd.getCallbackQuery().getMessage().getChatId(),
+                        upd.getCallbackQuery().getMessage().getMessageId());
         }
         case "monitored-list" -> {
-          deleteMessage(upd.getCallbackQuery().getMessage().getChatId(), upd.getCallbackQuery().getMessage().getMessageId());
-          SendChatAction action1 = SendChatAction.builder().chatId(upd.getCallbackQuery().getMessage().getChatId()).action(ActionType.TYPING.toString()).build();
-          BOT.silent().execute(action1);
+          sendTypeAction(upd.getCallbackQuery().getMessage().getChatId());
+          deleteMessage(upd.getCallbackQuery().getMessage().getChatId(),
+                        upd.getCallbackQuery().getMessage().getMessageId());
 
-          dev.ioliver.steamalert.models.User user = USER_SERVICE.findByTelegramId(upd.getCallbackQuery().getFrom().getId());
+          dev.ioliver.steamalert.models.User user = USER_SERVICE.findByTelegramId(
+                  upd.getCallbackQuery().getFrom().getId());
 
           if (user.getSteamIds().isEmpty()) {
-            List<InlineKeyboardButton> buttonList = List.of(InlineKeyboardButton.builder().text(Texts.ADD).callbackData("add-account").build(), InlineKeyboardButton.builder().text(Texts.CLOSE_BUTTON).callbackData("none").build());
+            List<InlineKeyboardButton> buttonList = List.of(
+                    InlineKeyboardButton.builder().text(Texts.ADD).callbackData("add-account").build(),
+                    InlineKeyboardButton.builder().text(Texts.CLOSE_BUTTON).callbackData("none").build());
             InlineKeyboardMarkup keyboardMarkup = InlineKeyboardMarkup.builder().keyboardRow(buttonList).build();
 
-            SendMessage message = SendMessage.builder().chatId(upd.getCallbackQuery().getMessage().getChatId()).text(Texts.DONT_HAVE_ANY_ACCOUNT).replyMarkup(keyboardMarkup).build();
+            SendMessage message = SendMessage.builder().chatId(upd.getCallbackQuery().getMessage().getChatId())
+                                             .text(Texts.DONT_HAVE_ANY_ACCOUNT).replyMarkup(keyboardMarkup).build();
             Optional<Message> sendMessage = ability.silent().execute(message);
-            sendMessage.ifPresent(value -> asyncDeleteMessage(sendMessage.get().getChatId(), sendMessage.get().getMessageId()));
+            sendMessage.ifPresent(
+                    value -> asyncDeleteMessage(sendMessage.get().getChatId(), sendMessage.get().getMessageId()));
           } else {
-            List<List<InlineKeyboardButton>> keyboardButtons = new java.util.ArrayList<>(user.getSteamIds().stream().map(id -> {
-              try {
-                SteamProfileDataDto profileData = STEAM_SERVICE.getSteamProfileData(id);
-                return List.of(InlineKeyboardButton.builder().text(profileData.personaname()).callbackData("check-" + id).build(), InlineKeyboardButton.builder().text(Texts.DELETE_BUTTON).callbackData("delete-" + id).build());
-              } catch (Exception e) {
-                return List.of(InlineKeyboardButton.builder().text(id).callbackData("check-" + id).build());
-              }
-            }).toList());
+            List<List<InlineKeyboardButton>> keyboardButtons = new java.util.ArrayList<>(
+                    user.getSteamIds().stream().map(id -> {
+                      try {
+                        SteamProfileDataDto profileData = STEAM_SERVICE.getSteamProfileData(id);
+                        return List.of(InlineKeyboardButton.builder().text(profileData.personaname())
+                                                           .callbackData("check-" + id).build(),
+                                       InlineKeyboardButton.builder().text(Texts.DELETE_BUTTON)
+                                                           .callbackData("delete-" + id).build());
+                      } catch (Exception e) {
+                        return List.of(InlineKeyboardButton.builder().text(id).callbackData("check-" + id).build());
+                      }
+                    }).toList());
 
-            List<InlineKeyboardButton> options = List.of(InlineKeyboardButton.builder().text(Texts.ADD).callbackData("add-account").build(), InlineKeyboardButton.builder().text(Texts.CLOSE_BUTTON).callbackData("none").build());
+            List<InlineKeyboardButton> options = List.of(
+                    InlineKeyboardButton.builder().text(Texts.ADD).callbackData("add-account").build(),
+                    InlineKeyboardButton.builder().text(Texts.CLOSE_BUTTON).callbackData("none").build());
 
             keyboardButtons.add(options);
 
             InlineKeyboardMarkup keyboardMarkup = InlineKeyboardMarkup.builder().keyboard(keyboardButtons).build();
-            SendMessage message = SendMessage.builder().chatId(upd.getCallbackQuery().getMessage().getChatId()).text(Texts.SELECT_AN_ACCOUNT).replyMarkup(keyboardMarkup).build();
+            SendMessage message = SendMessage.builder().chatId(upd.getCallbackQuery().getMessage().getChatId())
+                                             .text(Texts.SELECT_AN_ACCOUNT).replyMarkup(keyboardMarkup).build();
             Optional<Message> sendMessage = ability.silent().execute(message);
-            sendMessage.ifPresent(value -> asyncDeleteMessage(sendMessage.get().getChatId(), sendMessage.get().getMessageId()));
+            sendMessage.ifPresent(
+                    value -> asyncDeleteMessage(sendMessage.get().getChatId(), sendMessage.get().getMessageId()));
           }
         }
+        case "none" -> {
+          deleteMessage(upd.getCallbackQuery().getMessage().getChatId(),
+                        upd.getCallbackQuery().getMessage().getMessageId());
+        }
         default -> {
-          deleteMessage(upd.getCallbackQuery().getMessage().getChatId(), upd.getCallbackQuery().getMessage().getMessageId());
+          sendTypeAction(upd.getCallbackQuery().getMessage().getChatId());
+          deleteMessage(upd.getCallbackQuery().getMessage().getChatId(),
+                        upd.getCallbackQuery().getMessage().getMessageId());
           Matcher checkMatcher = Pattern.compile("check-(.*)").matcher(upd.getCallbackQuery().getData());
           Matcher deleteMatcher = Pattern.compile("delete-(.*)").matcher(upd.getCallbackQuery().getData());
           if (checkMatcher.find()) {
             List<AppDetailsDto> appDetails = STEAM_SERVICE.getAllSaleAppDetails(checkMatcher.group(1));
 
             if (appDetails.isEmpty()) {
-              AnswerCallbackQuery build = AnswerCallbackQuery.builder().callbackQueryId(upd.getCallbackQuery().getId()).text(Texts.WITHOUT_SALES).build();
+              AnswerCallbackQuery build = AnswerCallbackQuery.builder().callbackQueryId(upd.getCallbackQuery().getId())
+                                                             .text(Texts.WITHOUT_SALES).build();
               BOT.silent().execute(build);
             } else {
               List<SendPhoto> list = appDetails.stream().map(detail -> {
-                return SendPhoto.builder().chatId(upd.getCallbackQuery().getMessage().getChatId()).photo(STEAM_SERVICE.getImage(detail.headerImageUrl())).caption(STEAM_SERVICE.getDetailMessage(detail)).parseMode(ParseMode.HTML).build();
+                return SendPhoto.builder().chatId(upd.getCallbackQuery().getMessage().getChatId())
+                                .photo(STEAM_SERVICE.getImage(detail.headerImageUrl()))
+                                .caption(STEAM_SERVICE.getDetailMessage(detail)).parseMode(ParseMode.HTML).build();
               }).toList();
               for (var item : list) {
                 try {
@@ -205,10 +265,12 @@ public class UserAbilities implements AbilityExtension {
           if (deleteMatcher.find()) {
             try {
               USER_SERVICE.removeSteamId(AbilityUtils.getUser(upd).getId(), deleteMatcher.group(1));
-              AnswerCallbackQuery build = AnswerCallbackQuery.builder().callbackQueryId(upd.getCallbackQuery().getId()).text(Texts.DELETE_ACCOUNT_CONFIRM).build();
+              AnswerCallbackQuery build = AnswerCallbackQuery.builder().callbackQueryId(upd.getCallbackQuery().getId())
+                                                             .text(Texts.DELETE_ACCOUNT_CONFIRM).build();
               BOT.silent().execute(build);
             } catch (Exception ignored) {
-              AnswerCallbackQuery build = AnswerCallbackQuery.builder().callbackQueryId(upd.getCallbackQuery().getId()).text(Texts.DELETE_ACCOUNT_FAULT).build();
+              AnswerCallbackQuery build = AnswerCallbackQuery.builder().callbackQueryId(upd.getCallbackQuery().getId())
+                                                             .text(Texts.DELETE_ACCOUNT_FAULT).build();
               BOT.silent().execute(build);
             }
           }
@@ -223,43 +285,58 @@ public class UserAbilities implements AbilityExtension {
     AtomicReference<CallbackQuery> callbackQuery = new AtomicReference<>();
 
     return ReplyFlow.builder(BOT.db()).action((ability, upd) -> {
+      sendTypeAction(upd.getMessage().getChatId());
       callbackQuery.set(upd.getCallbackQuery());
       firstMessage.set(BOT.silent().send(Texts.INSERT_ACCOUNT_ID, AbilityUtils.getChatId(upd)));
-      deleteMessage(upd.getCallbackQuery().getMessage().getChatId(), upd.getCallbackQuery().getMessage().getMessageId());
+      deleteMessage(upd.getCallbackQuery().getMessage().getChatId(),
+                    upd.getCallbackQuery().getMessage().getMessageId());
     }).onlyIf(addFlow()).next(Reply.of((ability, upd) -> {
-      AnswerCallbackQuery build = AnswerCallbackQuery.builder().callbackQueryId(callbackQuery.get().getId()).text(Texts.ACCOUNT_DONT_EXIST).build();
+      sendTypeAction(upd.getMessage().getChatId());
+      AnswerCallbackQuery build = AnswerCallbackQuery.builder().callbackQueryId(callbackQuery.get().getId())
+                                                     .text(Texts.ACCOUNT_DONT_EXIST).build();
       try {
         ability.execute(build);
       } catch (TelegramApiException e) {
-        SendMessage message = SendMessage.builder().chatId(upd.getMessage().getChatId()).text(Texts.TIMEOUT_ERROR).build();
+        SendMessage message = SendMessage.builder().chatId(upd.getMessage().getChatId()).text(Texts.TIMEOUT_ERROR)
+                                         .build();
         Optional<Message> sendMessage = ability.silent().execute(message);
-        sendMessage.ifPresent(value -> asyncDeleteMessage(sendMessage.get().getChatId(), sendMessage.get().getMessageId()));
+        sendMessage.ifPresent(
+                value -> asyncDeleteMessage(sendMessage.get().getChatId(), sendMessage.get().getMessageId()));
       }
-      firstMessage.get().ifPresent(value -> deleteMessage(firstMessage.get().get().getChatId(), firstMessage.get().get().getMessageId()));
+      firstMessage.get().ifPresent(
+              value -> deleteMessage(firstMessage.get().get().getChatId(), firstMessage.get().get().getMessageId()));
     }, isValidCommand().negate(), validSteamId().negate())).next(Reply.of((ability, upd) -> {
+      sendTypeAction(upd.getMessage().getChatId());
       try {
         try {
           dev.ioliver.steamalert.models.User user = USER_SERVICE.findByTelegramId(AbilityUtils.getUser(upd).getId());
           USER_SERVICE.addSteamId(user.getTelegramId(), upd.getMessage().getText());
-          AnswerCallbackQuery build = AnswerCallbackQuery.builder().callbackQueryId(callbackQuery.get().getId()).text(Texts.ACCOUNT_ADDED).build();
+          AnswerCallbackQuery build = AnswerCallbackQuery.builder().callbackQueryId(callbackQuery.get().getId())
+                                                         .text(Texts.ACCOUNT_ADDED).build();
           ability.silent().execute(build);
         } catch (Exception e) {
-          AnswerCallbackQuery build = AnswerCallbackQuery.builder().callbackQueryId(callbackQuery.get().getId()).text(Texts.ADD_ACCOUNT_FAULT).build();
+          AnswerCallbackQuery build = AnswerCallbackQuery.builder().callbackQueryId(callbackQuery.get().getId())
+                                                         .text(Texts.ADD_ACCOUNT_FAULT).build();
           ability.silent().execute(build);
         }
       } catch (Exception e) {
-        SendMessage message = SendMessage.builder().chatId(upd.getMessage().getChatId()).text(Texts.TIMEOUT_ERROR).build();
+        SendMessage message = SendMessage.builder().chatId(upd.getMessage().getChatId()).text(Texts.TIMEOUT_ERROR)
+                                         .build();
         Optional<Message> sendMessage = ability.silent().execute(message);
-        sendMessage.ifPresent(value -> asyncDeleteMessage(sendMessage.get().getChatId(), sendMessage.get().getMessageId()));
+        sendMessage.ifPresent(
+                value -> asyncDeleteMessage(sendMessage.get().getChatId(), sendMessage.get().getMessageId()));
       }
-      firstMessage.get().ifPresent(value -> deleteMessage(firstMessage.get().get().getChatId(), firstMessage.get().get().getMessageId()));
+      firstMessage.get().ifPresent(
+              value -> deleteMessage(firstMessage.get().get().getChatId(), firstMessage.get().get().getMessageId()));
     }, isValidCommand().negate(), validSteamId())).build();
   }
 
   public Reply ifSuspended() {
     BiConsumer<BaseAbilityBot, Update> action = (ability, upd) -> {
+      sendTypeAction(upd.getMessage().getChatId());
       if (USER_SERVICE.findByTelegramId(AbilityUtils.getUser(upd).getId()).getRequests() == 50) {
-        SendMessage message = SendMessage.builder().chatId(upd.getMessage().getChatId()).text(Texts.TOO_MANY_REQUESTS).build();
+        SendMessage message = SendMessage.builder().chatId(upd.getMessage().getChatId()).text(Texts.TOO_MANY_REQUESTS)
+                                         .build();
         ability.silent().execute(message);
       }
     };
@@ -286,7 +363,7 @@ public class UserAbilities implements AbilityExtension {
       try {
         STEAM_SERVICE.getSteamProfileData(id);
         return true;
-      } catch (Exception e) {
+      } catch (Exception ignored) {
         return false;
       }
     };
@@ -297,6 +374,7 @@ public class UserAbilities implements AbilityExtension {
   }
 
   private Predicate<Update> isValidCommand() {
-    return upd -> AbilityUtils.isValidCommand(upd.getMessage().getText()) && BOT.abilities().containsKey(upd.getMessage().getText().trim().split(" ")[0].replace("/", ""));
+    return upd -> AbilityUtils.isValidCommand(upd.getMessage().getText()) &&
+            BOT.abilities().containsKey(upd.getMessage().getText().trim().split(" ")[0].replace("/", ""));
   }
 }

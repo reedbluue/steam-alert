@@ -11,9 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 @EnableScheduling
 @SpringBootApplication
 public class SteamAlertApplication {
-
   public static void main(String[] args) {
     new SpringApplicationBuilder(SteamAlertApplication.class).web(WebApplicationType.NONE).run(args);
   }
-
 }
