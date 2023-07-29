@@ -285,7 +285,6 @@ public class UserAbilities implements AbilityExtension {
     AtomicReference<CallbackQuery> callbackQuery = new AtomicReference<>();
 
     return ReplyFlow.builder(BOT.db()).action((ability, upd) -> {
-      sendTypeAction(upd.getMessage().getChatId());
       callbackQuery.set(upd.getCallbackQuery());
       firstMessage.set(BOT.silent().send(Texts.INSERT_ACCOUNT_ID, AbilityUtils.getChatId(upd)));
       deleteMessage(upd.getCallbackQuery().getMessage().getChatId(),
