@@ -50,6 +50,7 @@ public class UserService {
   @Transactional
   public User addSteamId(@NonNull Long telegramId, @NotNull String steamId) {
     User user = findByTelegramId(telegramId);
+    if (user.getSteamIds().contains(steamId)) throw new IllegalArgumentException("Steam ID already exists.");
     user.getSteamIds().add(steamId);
     return USER_REPOSITORY.save(user);
   }

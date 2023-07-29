@@ -235,7 +235,7 @@ public class UserAbilities implements AbilityExtension {
                         upd.getCallbackQuery().getMessage().getMessageId());
         }
         default -> {
-          sendTypeAction(upd.getCallbackQuery().getMessage().getChatId());
+          sendTypeAction(AbilityUtils.getChatId(upd));
           deleteMessage(upd.getCallbackQuery().getMessage().getChatId(),
                         upd.getCallbackQuery().getMessage().getMessageId());
           Matcher checkMatcher = Pattern.compile("check-(.*)").matcher(upd.getCallbackQuery().getData());
@@ -290,7 +290,6 @@ public class UserAbilities implements AbilityExtension {
       deleteMessage(upd.getCallbackQuery().getMessage().getChatId(),
                     upd.getCallbackQuery().getMessage().getMessageId());
     }).onlyIf(addFlow()).next(Reply.of((ability, upd) -> {
-      sendTypeAction(upd.getMessage().getChatId());
       AnswerCallbackQuery build = AnswerCallbackQuery.builder().callbackQueryId(callbackQuery.get().getId())
                                                      .text(Texts.ACCOUNT_DONT_EXIST).build();
       try {
@@ -305,7 +304,6 @@ public class UserAbilities implements AbilityExtension {
       firstMessage.get().ifPresent(
               value -> deleteMessage(firstMessage.get().get().getChatId(), firstMessage.get().get().getMessageId()));
     }, isValidCommand().negate(), validSteamId().negate())).next(Reply.of((ability, upd) -> {
-      sendTypeAction(upd.getMessage().getChatId());
       try {
         try {
           dev.ioliver.steamalert.models.User user = USER_SERVICE.findByTelegramId(AbilityUtils.getUser(upd).getId());
@@ -313,10 +311,13 @@ public class UserAbilities implements AbilityExtension {
           AnswerCallbackQuery build = AnswerCallbackQuery.builder().callbackQueryId(callbackQuery.get().getId())
                                                          .text(Texts.ACCOUNT_ADDED).build();
           ability.silent().execute(build);
-        } catch (Exception e) {
+        } catch (IllegalArgumentException e) {
+          AnswerCallbackQuery build = AnswerCallbackQuery.builder().callbackQueryId(callbackQuery.get().getId())
+                                                         .text(Texts.ACCOUNT_ALREADY_EXIST).build();
+          ability.silent().execute(build);
+        } catch (Exception ignored) {
           AnswerCallbackQuery build = AnswerCallbackQuery.builder().callbackQueryId(callbackQuery.get().getId())
                                                          .text(Texts.ADD_ACCOUNT_FAULT).build();
-          ability.silent().execute(build);
         }
       } catch (Exception e) {
         SendMessage message = SendMessage.builder().chatId(upd.getMessage().getChatId()).text(Texts.TIMEOUT_ERROR)
@@ -332,7 +333,6 @@ public class UserAbilities implements AbilityExtension {
 
   public Reply ifSuspended() {
     BiConsumer<BaseAbilityBot, Update> action = (ability, upd) -> {
-      sendTypeAction(upd.getMessage().getChatId());
       if (USER_SERVICE.findByTelegramId(AbilityUtils.getUser(upd).getId()).getRequests() == 50) {
         SendMessage message = SendMessage.builder().chatId(upd.getMessage().getChatId()).text(Texts.TOO_MANY_REQUESTS)
                                          .build();

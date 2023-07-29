@@ -36,4 +36,5 @@ public abstract class Texts {
   public static final String SHORT_DESCRIPTION = "A Telegram bot that sends notifications about games on sale on the " +
           "Steam platform.";
   public static final String FIRST_MESSAGE = "Hello! Welcome to Steam Alert! 🤖";
+  public static final String ACCOUNT_ALREADY_EXIST = "This account already exists in your list! 😕";
 }
